@@ -1,0 +1,3 @@
+# hide the default exported HTML file,
+#  since we want to use a11y_page.html
+tiger_and_dragon.html
