@@ -6,6 +6,11 @@ __lua__
 
 gpio_addr = 0x5f80
 function aria(text)
+  -- clear previous text
+  for i = 0x5f80,0x5fff do
+    poke(i, 0)
+  end
+  
   for i = 0, #text do
     local char = ord(text, i)
     
@@ -14,21 +19,90 @@ function aria(text)
   end
 end
 
+title_menu_options = {
+  "start",
+  "rules",
+  "about",
+  "controls"
+}
+
 function _init()
+  aria_text = ""
+  map_state = 1 -- title screen
+  menu_state = 1 -- menu option selected
+  
+  -- should use aria()?
+  aria_text = "tiger & dragon, menu with 4 items, start selected, use up and down to move, or press x to select"
 end
 
 function _update()
   if (btn(❎)) aria("x button pressed")
   if (btn(🅾️)) aria("o button pressed")
+  
+  -- handle menu navigation
+  if (btnp(⬇️)) then
+    new_option = ((menu_state+0)%4) + 1
+    update_menu_state(new_option)
+  end
+  if (btnp(⬆️)) then
+    new_option = ((menu_state-2)%4) + 1
+    update_menu_state(new_option)
+  end
+  
+  aria(aria_text)
+  
+  -- handle pause button
+  if (btn(6)) then
+    aria("you've entered the pause menu, read out is not available yet, press p or enter to leave") 
+  end
+end
+
+function update_menu_state(new_option)
+  menu_state = new_option
+  menu_text = title_menu_options[new_option]
+  aria_text = menu_text .. " selected"
 end
 
 function _draw()
   cls()
   
   map()
+  
+  if (map_state == 1) then
+    draw_title_screen()
+  end
 end
 
-aria("hello world")
+-- draw title screen
+function draw_title_screen()
+  -- draw title text
+  print("tiger &", 50, 20, 0)
+  print("dragon ", 50, 26, 0)
+  -- print("a11y pico-8 port", 45, 32, 0)
+  
+  -- draw title options
+  for i=1, #title_menu_options do
+    draw_menu_option(i, title_menu_options[i])
+  end
+end
+
+function draw_menu_option(i, text, selected)
+  local opt_h = 10 -- height
+  local opt_w = 38 -- width
+  local x = 48
+  local y = 68+(i*(opt_h + 2))
+  
+  local selected = menu_state == i
+  
+  -- determine color based on menu_state
+  local c = selected and 7 or 0
+  
+  -- draw rect
+  rect(x, y, x + opt_w, y + opt_h, c)
+  
+  -- print text
+  print(text, x + 4, y + 3, c)
+end
 __gfx__
 00000000077777700777777007777770077777700777777007777770077777700777777007777770077777700777777000000000000000000000000000000000
 000000000788877007cccc700788887007c77c700788887007cccc700788887007cccc700788887007cccc700777777000666666666666666666666666666000
