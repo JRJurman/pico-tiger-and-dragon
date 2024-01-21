@@ -189,24 +189,29 @@ end
 -->8
 -- about screen
 
+function is_break(char)
+  local char_code = ord(char)
+  return char_code == 32 or char_code == 10 or char_code == 9
+end
+
 -- wrap text function
-function wrap_text(text)
+function wrap_text(text, limit)
 		local words = {""}
 		for i=1, #text do
 				local len_last_word = #words[#words]
-				if text[i] == " " and len_last_word > 0 then
+				if is_break(text[i]) and len_last_word > 0 then
 						-- create the next word
 						words[#words + 1] = ""
-				elseif text[i] ~= " " then
+				elseif not is_break(text[i]) then
 						-- append letter to current word		
 						words[#words] = words[#words] .. text[i] 				
 				end
 		end
 		local lines = {words[1]}
 		for word_idx=2, #words do
-		  -- check if adding this word would put us over 25 chars
+		  -- check if adding this word would put us over
     local new_len = #lines[#lines] + #words[word_idx]
-    if new_len < 25 then
+    if new_len < limit then
       lines[#lines] = lines[#lines] .. " " .. words[word_idx]
     else
       lines[#lines + 1] = words[word_idx]
@@ -228,18 +233,11 @@ function draw_about_screen()
   	 the tables and launch an 
   	 attack of  your own.
   ]]
-  local about_lines = wrap_text(about_text)
+  local about_lines = wrap_text(about_text, 28)
   for line_idx = 1, #about_lines do
-  		print(about_lines[line_idx], 16, 6+(6*line_idx), 7)
+  		print(about_lines[line_idx], 11, 4+(6*line_idx), 7)
   end
-		
-  -- print("you are a kung-fu master", 16, 12, 7)
-  -- print("a11y pico-8 port", 45, 32, 0)
   
-  -- draw title options
-  for i=1, #title_menu_options do
-    draw_menu_option(i, title_menu_options[i])
-  end
 end
 __gfx__
 00000000077777700777777007777770077777700777777007777770077777700777777007777770077777700777777000000000000000000000000000000000
