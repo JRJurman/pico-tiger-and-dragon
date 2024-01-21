@@ -29,10 +29,13 @@ end
 
 function _draw()
   cls()
-  map()
   
   if (map_state == 1) then
+  		map()
     draw_title_screen()
+  elseif (map_state == 3) then
+  		map(16, 0)
+  		draw_about_screen()
   end
 end
 -->8
@@ -182,6 +185,61 @@ function draw_menu_option(i, text, selected)
   
   -- print text
   print(text, x + 4, y + 3, c)
+end
+-->8
+-- about screen
+
+-- wrap text function
+function wrap_text(text)
+		local words = {""}
+		for i=1, #text do
+				local len_last_word = #words[#words]
+				if text[i] == " " and len_last_word > 0 then
+						-- create the next word
+						words[#words + 1] = ""
+				elseif text[i] ~= " " then
+						-- append letter to current word		
+						words[#words] = words[#words] .. text[i] 				
+				end
+		end
+		local lines = {words[1]}
+		for word_idx=2, #words do
+		  -- check if adding this word would put us over 25 chars
+    local new_len = #lines[#lines] + #words[word_idx]
+    if new_len < 25 then
+      lines[#lines] = lines[#lines] .. " " .. words[word_idx]
+    else
+      lines[#lines + 1] = words[word_idx]
+    end		  
+		end
+		return lines
+end
+
+-- draw about screen
+function draw_about_screen()
+  -- draw about text
+  local about_text = [[
+  		you are a kung-fu master, 
+  		trading blows with the 
+  		school of the "tiger" and 
+  		the school of the "dragon".
+  	 defend against your 
+  	 opponent's attacks to turn
+  	 the tables and launch an 
+  	 attack of  your own.
+  ]]
+  local about_lines = wrap_text(about_text)
+  for line_idx = 1, #about_lines do
+  		print(about_lines[line_idx], 16, 6+(6*line_idx), 7)
+  end
+		
+  -- print("you are a kung-fu master", 16, 12, 7)
+  -- print("a11y pico-8 port", 45, 32, 0)
+  
+  -- draw title options
+  for i=1, #title_menu_options do
+    draw_menu_option(i, title_menu_options[i])
+  end
 end
 __gfx__
 00000000077777700777777007777770077777700777777007777770077777700777777007777770077777700777777000000000000000000000000000000000
