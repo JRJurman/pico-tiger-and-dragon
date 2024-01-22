@@ -21,8 +21,12 @@ end
 function _update()
   if (map_state == 1) then
     handle_title_updates()
+  elseif (map_state == 2) then
+    handle_rules_updates()
   elseif (map_state == 3) then
     handle_about_updates()
+  elseif (map_state == 4) then
+    handle_controls_updates()
   end
 
   update_sr()
@@ -34,8 +38,12 @@ function _draw()
 
   if (map_state == 1) then
     draw_title_screen()
+  elseif (map_state == 2) then
+  		draw_rules_screen()
   elseif (map_state == 3) then
   		draw_about_screen()
+  elseif (map_state == 4) then
+  		draw_controls_screen()
   end
 end
 -->8
@@ -135,7 +143,8 @@ end
 function handle_title_updates()
   if (btnp(❎) or btnp(🅾️)) then
     map_state = menu_state
-    
+
+    if (map_state == 2) init_rules_screen()
     if (map_state == 3) init_about_screen()
   end
 
@@ -161,7 +170,7 @@ end
 -- draw title screen
 function draw_title_screen()
   map()
-  
+
   -- draw title text
   print("tiger &", 50, 20, 0)
   print("dragon ", 50, 26, 0)
@@ -193,56 +202,25 @@ end
 -->8
 -- about screen
 
-function is_break(char)
-  local char_code = ord(char)
-  return char_code == 32 or char_code == 10 or char_code == 9
-end
-
--- wrap text function
-function wrap_text(text, limit)
-		local words = {""}
-		for i=1, #text do
-				local len_last_word = #words[#words]
-				if is_break(text[i]) and len_last_word > 0 then
-						-- create the next word
-						words[#words + 1] = ""
-				elseif not is_break(text[i]) then
-						-- append letter to current word
-						words[#words] = words[#words] .. text[i]
-				end
-		end
-		local lines = {words[1]}
-		for word_idx=2, #words do
-		  -- check if adding this word would put us over
-    local new_len = #lines[#lines] + #words[word_idx]
-    if new_len < limit then
-      lines[#lines] = lines[#lines] .. " " .. words[word_idx]
-    else
-      lines[#lines + 1] = words[word_idx]
-    end
-		end
-		return lines
-end
-
 about_text_blocks = {
-[[ you are a kung-fu master, 
-trading blows with the school 
-of the "tiger" and the school 
-of the "dragon". defend against 
-your opponent's attacks to turn 
-the tables and launch an attack 
+[[ you are a kung-fu master,
+trading blows with the school
+of the "tiger" and the school
+of the "dragon". defend against
+your opponent's attacks to turn
+the tables and launch an attack
 of  your own. ]],
-[[this is a digital port of the 
-"tiger and dragon" game 
-published by oink games and 
+[[this is a digital port of the
+"tiger and dragon" game
+published by oink games and
 archlight games. ]],
-[[this is an experiment in 
-building an accessible game in 
-pico-8, using pico-a11y-template 
-, created by jesse jurman and 
+[[this is an experiment in
+building an accessible game in
+pico-8, using pico-a11y-template
+, created by jesse jurman and
 tina howard. ]],
-[[for the full experience, we 
-recommend checking out the 
+[[for the full experience, we
+recommend checking out the
 official board game!]]
 }
 
@@ -277,11 +255,173 @@ end
 function draw_about_screen()
   local current_line = 1
   for text_block=1, #about_text_blocks do
-    local about_lines = wrap_text(about_text_blocks[text_block], 28)
+    local about_lines = wrap_text(about_text_blocks[text_block])
 
     for line_idx = 1, #about_lines do
       current_line = current_line + 1
   		  print(about_lines[line_idx], 11, 0 + about_scroll_offset + (6*current_line), 7)
+    end
+
+    current_line = current_line + 1
+  end
+
+  map(16, 0)
+end
+-->8
+-- text functions for about pages
+
+function is_break(char)
+  local char_code = ord(char)
+  return char_code == 32 or char_code == 10 or char_code == 9
+end
+
+char_limit = 27
+
+-- wrap text function
+function wrap_text(text)
+		local words = {""}
+		for i=1, #text do
+				local len_last_word = #words[#words]
+				if is_break(text[i]) and len_last_word > 0 then
+						-- create the next word
+						words[#words + 1] = ""
+				elseif not is_break(text[i]) then
+						-- append letter to current word
+						words[#words] = words[#words] .. text[i]
+				end
+		end
+		local lines = {words[1]}
+		for word_idx=2, #words do
+		  -- check if adding this word would put us over
+    local new_len = #lines[#lines] + #words[word_idx]
+    if new_len < char_limit then
+      lines[#lines] = lines[#lines] .. " " .. words[word_idx]
+    else
+      lines[#lines + 1] = words[word_idx]
+    end
+		end
+		return lines
+end
+-->8
+-- rules screen
+
+rule_text_blocks = {
+[[ at the start of the game you
+and your opponent will draw 13
+tiles. the player going first
+draws an extra tile. ]],
+[[ the first player chooses one
+tile to start the attack. the
+next player can play a matching
+tile, or pass. the tiger matches
+all even valued tiles, and the
+dragon matches all odd valued
+tiles. ]],
+[[ if the player has a matching
+tile, they can play that tile
+and then start their own attack,
+placing any tile they want. if
+they pass or do not have a
+matching tile, the attacking
+player chooses any tile to put
+face down on their board. ]],
+[[ the player who places all of
+their tiles first wins the round.
+]]
+}
+
+rule_scroll_offset = 0
+
+function init_rules_screen()
+  set_sr_text(
+    "rules page, press x to return to main menu" ..
+    rule_text_blocks[1] ..
+    rule_text_blocks[2] ..
+    rule_text_blocks[3] ..
+    rule_text_blocks[4]
+  )
+end
+
+function handle_rules_updates()
+  if (btnp(❎) or btnp(🅾️)) then
+    map_state = 1
+    set_sr_text("back to main menu, rules selected")
+  end
+
+  -- handle scrolling
+  if (btnp(⬇️) and rule_scroll_offset > -70) then
+    rule_scroll_offset = rule_scroll_offset - 6
+  end
+  if (btnp(⬆️) and rule_scroll_offset < 0) then
+    rule_scroll_offset = rule_scroll_offset + 6
+  end
+end
+
+-- draw rules screen
+function draw_rules_screen()
+  local current_line = 1
+  for text_block=1, #rule_text_blocks do
+    local rule_lines = wrap_text(rule_text_blocks[text_block])
+
+    for line_idx = 1, #rule_lines do
+      current_line = current_line + 1
+  		  print(rule_lines[line_idx], 11, 0 + rule_scroll_offset + (6*current_line), 7)
+    end
+
+    current_line = current_line + 1
+  end
+
+  map(16, 0)
+end
+-->8
+-- controls screen
+
+control_text_blocks = {
+[[ up / down - move between
+score, boards, tiles ]],
+[[ left / right - change tile
+selection ]],
+[[ x (x on keyboard) - select a 
+tile ]],
+[[ o (z on keyboard) - pass ]],
+}
+
+control_scroll_offset = 0
+
+function init_controls_screen()
+  set_sr_text(
+    "controls page, press x to return to main menu" ..
+    control_text_blocks[1] ..
+    control_text_blocks[2] ..
+    control_text_blocks[3] ..
+    control_text_blocks[4]
+  )
+end
+
+function handle_controls_updates()
+  if (btnp(❎) or btnp(🅾️)) then
+    map_state = 1
+    set_sr_text("back to main menu, controls selected")
+  end
+
+  -- handle scrolling
+  if (btnp(⬇️) and control_scroll_offset > 0) then
+    control_scroll_offset = control_scroll_offset - 6
+  end
+  if (btnp(⬆️) and control_scroll_offset < 0) then
+    control_scroll_offset = control_scroll_offset + 6
+  end
+end
+
+-- draw controls screen
+function draw_controls_screen()
+  local current_line = 1
+  for text_block=1, #control_text_blocks do
+    local control_lines = wrap_text(control_text_blocks[text_block])
+
+    for line_idx = 1, #control_lines do
+      current_line = current_line + 1
+  		  print(control_lines[line_idx], 11, 0 + control_scroll_offset + (6*current_line), 7)
     end
 
     current_line = current_line + 1
