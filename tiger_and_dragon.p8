@@ -14,27 +14,27 @@ title_menu_options = {
 function _init()
   map_state = 1 -- title screen
   menu_state = 1 -- menu option selected
-  
-  set_a11y_text("tiger & dragon, an accessible experimental port, created by jesse jurman and tina howard. menu with 4 items, start selected, use up and down to move, or press x to select")
+
+  set_sr_text("tiger & dragon, an accessible experimental port, created by jesse jurman and tina howard. menu with 4 items, start selected, use up and down to move, or press x to select")
 end
 
 function _update()
   if (map_state == 1) then
     handle_title_updates()
+  elseif (map_state == 3) then
+    handle_about_updates()
   end
-  
+
   update_sr()
   handle_pause_sr()
 end
 
 function _draw()
   cls()
-  
+
   if (map_state == 1) then
-  		map()
     draw_title_screen()
   elseif (map_state == 3) then
-  		map(16, 0)
   		draw_about_screen()
   end
 end
@@ -77,13 +77,13 @@ function update_sr()
     poke(a11y_read, 0)
     poke(a11y_page, page)
   end
-  
+
   if (page <= last_page) then
    -- clear previous text
    for i = a11y_start,a11y_end do
      poke(i, 0)
    end
-   
+
 	  -- load the text for this page
 	  local text_start = a11y_page_size * page
 	  local text_end = a11y_page_size * (page + 1)
@@ -95,7 +95,7 @@ function update_sr()
   end
 end
 
-function set_a11y_text(text)
+function set_sr_text(text)
   -- set text and page variables
   a11y_text = text
   local page_size = (#text/a11y_page_size)
@@ -117,15 +117,15 @@ function handle_pause_sr()
   -- this is the text before pausing
   -- this will also be true right after pause menu is closed
   if (pre_paused_text != "") then
-    set_a11y_text(pre_paused_text)
+    set_sr_text(pre_paused_text)
     pre_paused_text = ""
   end
-  
+
   -- then, if we just paused, update the menu text
   -- and save the existing a11y text (to load later)
   if (btn(6)) then
     pre_paused_text = a11y_text
-    set_a11y_text("you've entered the pause menu, read out is not available yet, press p or enter to leave")
+    set_sr_text("you've entered the pause menu, read out is not available yet, press p or enter to leave")
   end
 end
 -->8
@@ -135,8 +135,10 @@ end
 function handle_title_updates()
   if (btnp(❎) or btnp(🅾️)) then
     map_state = menu_state
+    
+    if (map_state == 3) init_about_screen()
   end
-  
+
   -- handle menu navigation
   if (btnp(⬇️)) then
     new_option = ((menu_state+0)%4) + 1
@@ -152,17 +154,19 @@ end
 function update_menu_state(new_option)
   menu_state = new_option
   menu_text = title_menu_options[new_option]
-  
-  set_a11y_text(menu_text .. "menu item selected")
+
+  set_sr_text(menu_text .. " menu item selected")
 end
 
 -- draw title screen
 function draw_title_screen()
+  map()
+  
   -- draw title text
   print("tiger &", 50, 20, 0)
   print("dragon ", 50, 26, 0)
   -- print("a11y pico-8 port", 45, 32, 0)
-  
+
   -- draw title options
   for i=1, #title_menu_options do
     draw_menu_option(i, title_menu_options[i])
@@ -174,15 +178,15 @@ function draw_menu_option(i, text, selected)
   local opt_w = 38 -- width
   local x = 48
   local y = 68+(i*(opt_h + 2))
-  
+
   local selected = menu_state == i
-  
+
   -- determine color based on menu_state
   local c = selected and 7 or 0
-  
+
   -- draw rect
   rect(x, y, x + opt_w, y + opt_h, c)
-  
+
   -- print text
   print(text, x + 4, y + 3, c)
 end
@@ -203,8 +207,8 @@ function wrap_text(text, limit)
 						-- create the next word
 						words[#words + 1] = ""
 				elseif not is_break(text[i]) then
-						-- append letter to current word		
-						words[#words] = words[#words] .. text[i] 				
+						-- append letter to current word
+						words[#words] = words[#words] .. text[i]
 				end
 		end
 		local lines = {words[1]}
@@ -215,29 +219,75 @@ function wrap_text(text, limit)
       lines[#lines] = lines[#lines] .. " " .. words[word_idx]
     else
       lines[#lines + 1] = words[word_idx]
-    end		  
+    end
 		end
 		return lines
 end
 
+about_text_blocks = {
+[[ you are a kung-fu master, 
+trading blows with the school 
+of the "tiger" and the school 
+of the "dragon". defend against 
+your opponent's attacks to turn 
+the tables and launch an attack 
+of  your own. ]],
+[[this is a digital port of the 
+"tiger and dragon" game 
+published by oink games and 
+archlight games. ]],
+[[this is an experiment in 
+building an accessible game in 
+pico-8, using pico-a11y-template 
+, created by jesse jurman and 
+tina howard. ]],
+[[for the full experience, we 
+recommend checking out the 
+official board game!]]
+}
+
+about_scroll_offset = 0
+
+function init_about_screen()
+  set_sr_text(
+    "about page, press x to return to main menu" ..
+    about_text_blocks[1] ..
+    about_text_blocks[2] ..
+    about_text_blocks[3] ..
+    about_text_blocks[4]
+  )
+end
+
+function handle_about_updates()
+  if (btnp(❎) or btnp(🅾️)) then
+    map_state = 1
+    set_sr_text("back to main menu, about selected")
+  end
+
+  -- handle scrolling
+  if (btnp(⬇️) and about_scroll_offset > -40) then
+    about_scroll_offset = about_scroll_offset - 6
+  end
+  if (btnp(⬆️) and about_scroll_offset < 0) then
+    about_scroll_offset = about_scroll_offset + 6
+  end
+end
+
 -- draw about screen
 function draw_about_screen()
-  -- draw about text
-  local about_text = [[
-  		you are a kung-fu master, 
-  		trading blows with the 
-  		school of the "tiger" and 
-  		the school of the "dragon".
-  	 defend against your 
-  	 opponent's attacks to turn
-  	 the tables and launch an 
-  	 attack of  your own.
-  ]]
-  local about_lines = wrap_text(about_text, 28)
-  for line_idx = 1, #about_lines do
-  		print(about_lines[line_idx], 11, 4+(6*line_idx), 7)
+  local current_line = 1
+  for text_block=1, #about_text_blocks do
+    local about_lines = wrap_text(about_text_blocks[text_block], 28)
+
+    for line_idx = 1, #about_lines do
+      current_line = current_line + 1
+  		  print(about_lines[line_idx], 11, 0 + about_scroll_offset + (6*current_line), 7)
+    end
+
+    current_line = current_line + 1
   end
-  
+
+  map(16, 0)
 end
 __gfx__
 00000000077777700777777007777770077777700777777007777770077777700777777007777770077777700777777000000000000000000000000000000000
