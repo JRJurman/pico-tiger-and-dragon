@@ -12,15 +12,17 @@ title_menu_options = {
 }
 
 function _init()
-  map_state = 1 -- title screen
+  map_state = 0 -- title screen
   menu_state = 1 -- menu option selected
 
   set_sr_text("tiger & dragon, an accessible experimental port, created by jesse jurman and tina howard. menu with 4 items, start selected, use up and down to move, or press x to select")
 end
 
 function _update()
-  if (map_state == 1) then
+  if (map_state == 0) then
     handle_title_updates()
+  elseif (map_state == 1) then
+    handle_game_updates()
   elseif (map_state == 2) then
     handle_rules_updates()
   elseif (map_state == 3) then
@@ -36,8 +38,10 @@ end
 function _draw()
   cls()
 
-  if (map_state == 1) then
+  if (map_state == 0) then
     draw_title_screen()
+  elseif (map_state == 1) then
+    draw_game_screen()
   elseif (map_state == 2) then
   		draw_rules_screen()
   elseif (map_state == 3) then
@@ -144,8 +148,10 @@ function handle_title_updates()
   if (btnp(❎) or btnp(🅾️)) then
     map_state = menu_state
 
+    if (map_state == 1) init_game_screen()
     if (map_state == 2) init_rules_screen()
     if (map_state == 3) init_about_screen()
+    if (map_state == 4) init_controls_screen()
   end
 
   -- handle menu navigation
@@ -238,7 +244,7 @@ end
 
 function handle_about_updates()
   if (btnp(❎) or btnp(🅾️)) then
-    map_state = 1
+    map_state = 0
     set_sr_text("back to main menu, about selected")
   end
 
@@ -344,7 +350,7 @@ end
 
 function handle_rules_updates()
   if (btnp(❎) or btnp(🅾️)) then
-    map_state = 1
+    map_state = 0
     set_sr_text("back to main menu, rules selected")
   end
 
@@ -400,7 +406,7 @@ end
 
 function handle_controls_updates()
   if (btnp(❎) or btnp(🅾️)) then
-    map_state = 1
+    map_state = 0
     set_sr_text("back to main menu, controls selected")
   end
 
@@ -428,6 +434,25 @@ function draw_controls_screen()
   end
 
   map(16, 0)
+end
+-->8
+-- game screen
+function init_game_screen()
+  
+end
+
+function handle_game_updates()
+  if (btnp(❎) or btnp(🅾️)) then
+    map_state = 0
+    set_sr_text("back to main menu, about selected")
+  end
+end
+
+function draw_game_screen()
+  map(32,0)
+  spr(78,11,67,3,3)
+  spr(78,92,39,3,3,true,true)
+  
 end
 __gfx__
 00000000077777700777777007777770077777700777777007777770077777700777777007777770077777700777777000000000000000000000000000000000
