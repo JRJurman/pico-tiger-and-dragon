@@ -490,6 +490,7 @@ function draw_game_screen()
   draw_cpu_tiles()
   draw_tile_cursor()
   draw_board_cursor()
+  draw_cpu_cursor()
 end
 
 function give_tiles(hand)
@@ -558,6 +559,13 @@ function draw_board_cursor()
     9, -55+(40*selected_panel), 
     109, -14+(39*selected_panel),
     11)
+end
+
+function draw_cpu_cursor()
+  if selected_panel != 1 then
+    return
+  end
+  rect(8, 11, 119, 20, 11)
 end
 
 
