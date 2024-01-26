@@ -450,6 +450,9 @@ tile_pool = {
   9,10 -- tiger and dragon
 }
 
+plr_board = {}
+cpu_board = {}
+
 first_player = 0
 cpu_tiles = {}
 plr_tiles = {}
@@ -491,6 +494,7 @@ function draw_game_screen()
   draw_tile_cursor()
   draw_board_cursor()
   draw_cpu_cursor()
+  draw_cpu_board()
 end
 
 function give_tiles(hand)
@@ -513,15 +517,23 @@ function init_game_state()
   
   -- sort the players hand
   qsort(plr_tiles) 
+  
+  -- add tile to board based on first player
+  if first_player == 0 then
+    add(plr_board, nil)
+    place_tile(cpu_tiles, cpu_board, 1)
+  else
+    add(cpu_board, nil)
+  end
 end
 
 -- this for the tiles on the board to be scaled
-function draw_board_tiles()
-  for i=1,#plr_tiles do
-    local tile = plr_tiles[i]
+function draw_cpu_board()
+  for i=1,#cpu_board do
+    local tile = cpu_board[i]
     sspr(tile*8, 0,
       8,8, --width, height
-      10,10, -- x,y
+      93,46, -- x,y
       16,16 -- stretched width, height 
     )
   end
@@ -567,6 +579,12 @@ function draw_cpu_cursor()
   end
   rect(8, 11, 119, 20, 11)
 end
+
+function place_tile(tiles, board, idx)
+  local tile = deli(tiles,idx)
+  add(board,tile)
+end
+
 
 
 
