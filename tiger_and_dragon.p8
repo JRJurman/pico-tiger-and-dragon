@@ -487,8 +487,7 @@ end
 
 function draw_game_screen()
   map(32,0)
-  spr(78,11,67,3,3)
-  spr(78,92,39,3,3,true,true)
+  
   draw_plr_tiles()
   draw_cpu_tiles()
   draw_tile_cursor()
@@ -523,7 +522,7 @@ function init_game_state()
   
   fill_tile_pool()
 
-  first_player = 1 -- flr(rnd(2))
+  first_player = flr(rnd(2))
   -- give each player 13 tiles
   local cpu_limit = first_player == 0 and 14 or 13
   local plr_limit = first_player == 1 and 14 or 13
@@ -539,37 +538,51 @@ function init_game_state()
   
   -- add tile to board based on first player
   if first_player == 0 then
-    add(plr_board, nil)
+    add(plr_board, -1)
     place_tile(cpu_tiles, cpu_board, 1)
   else
-    add(cpu_board, nil)
+    add(cpu_board, -1)
   end
 end
 
 -- this for the tiles on the board to be scaled
 function draw_plr_board()
+
+  -- icon for starting tile
+  spr(78,11,67,3,3)
+  
+  -- draw tiles player has
   for i=1,#plr_board do
     local row = ((i+1) % 2)
     local col = ceil(i / 2)
     local tile = plr_board[i]
-    sspr(tile*8, 0,
-      8,8, --width, height
-      -4+(14*col), -- x
-      68+(18*row), -- y
-      16,16 -- stretched width, height 
-    )
+    if tile != -1 then
+      sspr(tile*8, 0,
+        8,8, --width, height
+        -4+(14*col), -- x
+        68+(18*row), -- y
+        16,16 -- stretched width, height 
+      )
+    end
   end
 end
 
 -- this for the tiles on the board to be scaled
 function draw_cpu_board()
+
+  -- starting tile for cpu
+  spr(78,93,39,3,3,true,true)
+  
+  -- tiles from cpu's board
   for i=1,#cpu_board do
     local tile = cpu_board[i]
-    sspr(tile*8, 0,
-      8,8, --width, height
-      93,46, -- x,y
-      16,16 -- stretched width, height 
-    )
+    if tile != -1 then
+      sspr(tile*8, 0,
+        8,8, --width, height
+        93,46, -- x,y
+        16,16 -- stretched width, height 
+      )
+    end
   end
 end
 
