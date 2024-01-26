@@ -437,8 +437,28 @@ function draw_controls_screen()
 end
 -->8
 -- game screen
+
+tile_pool = {
+  1,
+  2,2,
+  3,3,3,
+  4,4,4,4,
+  5,5,5,5,5,
+  6,6,6,6,6,6,
+  7,7,7,7,7,7,7,
+  8,8,8,8,8,8,8,8,
+  9,10 -- tiger and dragon
+}
+
+first_player = 0
+cpu_tiles = {}
+plr_tiles = {}
+selected_tile = 1
+
 function init_game_screen()
-  
+  -- setup the game state
+  init_game_state()
+  -- set the screen reader text
 end
 
 function handle_game_updates()
@@ -446,14 +466,79 @@ function handle_game_updates()
     map_state = 0
     set_sr_text("back to main menu, about selected")
   end
+  if (btnp(➡️)) then
+    selected_tile = (selected_tile) % #plr_tiles + 1
+  end
+  if (btnp(⬅️)) then
+    selected_tile = (selected_tile - 2) % #plr_tiles + 1
+  end
 end
 
 function draw_game_screen()
   map(32,0)
   spr(78,11,67,3,3)
   spr(78,92,39,3,3,true,true)
-  
+  draw_plr_tiles()
+  draw_cpu_tiles()
+  draw_tile_cursor()
 end
+
+function give_tiles(hand)
+  local tile_idx = ceil(rnd(#tile_pool))
+  local tile = deli(tile_pool,tile_idx)
+  add(hand,tile)
+end
+
+function init_game_state()
+  first_player = flr(rnd(2))
+  -- give each player 13 tiles
+  local cpu_limit = first_player == 0 and 14 or 13
+  local plr_limit = first_player == 1 and 14 or 13
+  for i=1,cpu_limit do
+    give_tiles(cpu_tiles)
+  end
+  for i=1,plr_limit do
+    give_tiles(plr_tiles)
+  end 
+end
+
+-- this for the tiles on the board to be scaled
+function draw_board_tiles()
+  for i=1,#plr_tiles do
+    local tile = plr_tiles[i]
+    sspr(tile*8, 0,
+      8,8, --width, height
+      10,10, -- x,y
+      16,16 -- stretched width, height 
+    )
+  end
+end
+
+function draw_plr_tiles()
+  for i=1,#plr_tiles do
+    local tile = plr_tiles[i]
+    spr(tile, 0.5+(8*i), 108)
+  end
+end
+
+function draw_cpu_tiles()
+  for i=1,#cpu_tiles do
+    local tile = 11
+    spr(tile, 0.5+(8*i), 12)
+  end
+end
+
+function draw_tile_cursor()
+  if selected_tile == nil then
+    return
+  end
+  rect(
+    0.5+(8*selected_tile), 107, 
+    7.5+(8*selected_tile), 116,
+    11)
+end
+
+
 __gfx__
 00000000077777700777777007777770077777700777777007777770077777700777777007777770077777700777777000000000000000000000000000000000
 000000000788877007cccc700788887007c77c700788887007cccc700788887007cccc700788887007cccc700777777000666666666666666666666666666000
