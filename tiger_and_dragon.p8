@@ -454,6 +454,7 @@ first_player = 0
 cpu_tiles = {}
 plr_tiles = {}
 selected_tile = 1
+selected_panel = 4
 
 function init_game_screen()
   -- setup the game state
@@ -472,6 +473,13 @@ function handle_game_updates()
   if (btnp(⬅️)) then
     selected_tile = (selected_tile - 2) % #plr_tiles + 1
   end
+  if (btnp(⬆️)) then
+    selected_panel = (selected_panel - 2) % 4 + 1
+  end
+  if (btnp(⬇️)) then
+    selected_panel = (selected_panel) % 4 + 1
+
+  end
 end
 
 function draw_game_screen()
@@ -481,6 +489,7 @@ function draw_game_screen()
   draw_plr_tiles()
   draw_cpu_tiles()
   draw_tile_cursor()
+  draw_board_cursor()
 end
 
 function give_tiles(hand)
@@ -532,7 +541,7 @@ function draw_cpu_tiles()
 end
 
 function draw_tile_cursor()
-  if selected_tile == nil then
+  if selected_panel != 4 then
     return
   end
   rect(
@@ -540,6 +549,17 @@ function draw_tile_cursor()
     7.5+(8*selected_tile), 116,
     11)
 end
+
+function draw_board_cursor()
+  if selected_panel != 3 and selected_panel != 2 then
+    return
+  end
+  rect(
+    9, -55+(40*selected_panel), 
+    109, -14+(39*selected_panel),
+    11)
+end
+
 
 
 -->8
