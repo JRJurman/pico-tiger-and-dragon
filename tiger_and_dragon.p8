@@ -438,17 +438,7 @@ end
 -->8
 -- game screen
 
-tile_pool = {
-  1,
-  2,2,
-  3,3,3,
-  4,4,4,4,
-  5,5,5,5,5,
-  6,6,6,6,6,6,
-  7,7,7,7,7,7,7,
-  8,8,8,8,8,8,8,8,
-  9,10 -- tiger and dragon
-}
+tile_pool = {}
 
 plr_board = {}
 cpu_board = {}
@@ -497,6 +487,16 @@ function draw_game_screen()
   draw_cpu_board()
 end
 
+function fill_tile_pool()
+  tile_pool = {
+    1, 2,2, 3,3,3, 4,4,4,4,
+    5,5,5,5,5, 6,6,6,6,6,6,
+    7,7,7,7,7,7,7,
+    8,8,8,8,8,8,8,8,
+    9,10 -- tiger and dragon
+  }
+end
+
 function give_tiles(hand)
   local tile_idx = ceil(rnd(#tile_pool))
   local tile = deli(tile_pool,tile_idx)
@@ -504,6 +504,14 @@ function give_tiles(hand)
 end
 
 function init_game_state()
+  plr_board = {}
+  cpu_board = {}
+  
+  cpu_tiles = {}
+  plr_tiles = {}
+  
+  fill_tile_pool()
+
   first_player = flr(rnd(2))
   -- give each player 13 tiles
   local cpu_limit = first_player == 0 and 14 or 13
