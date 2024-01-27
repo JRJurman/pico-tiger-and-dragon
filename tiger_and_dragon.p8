@@ -457,8 +457,7 @@ game_state = -1
 
 function init_game_screen()
   -- setup the game state
-  init_game_state()
-  -- set the screen reader text
+  local init_text = init_game_state()
 end
 
 function handle_game_updates()
@@ -501,10 +500,12 @@ function handle_game_updates()
   if (btnp(➡️) and selected_panel == 4) then
     sfx(6)
     selected_tile = (selected_tile) % #plr_tiles + 1
+  		set_sr_text(tile_sr(plr_tiles[selected_tile]) .. " selected. "  .. #plr_tiles - selected_tile .. " tiles remaining.")
   end
   if (btnp(⬅️) and selected_panel == 4) then
     sfx(6)
     selected_tile = (selected_tile - 2) % #plr_tiles + 1
+    set_sr_text(tile_sr(plr_tiles[selected_tile]) .. " selected. " .. #plr_tiles - selected_tile .. " tiles remaining.")
   end
   
   -- moving up and down changes selected panel
@@ -556,8 +557,10 @@ function init_game_state()
   cpu_passed = false
   
   fill_tile_pool()
+  
+  local init_text = ""
 
-  first_player = 0 -- flr(rnd(2))
+  first_player = flr(rnd(2))
   -- give each player 13 tiles
   local cpu_limit = first_player == 0 and 14 or 13
   local plr_limit = first_player == 1 and 14 or 13
@@ -586,6 +589,16 @@ function init_game_state()
   else
     game_state = 0
   end
+  
+  local plr_tile_sr =  "tile " .. tile_sr(plr_tiles[1]) .. " selected. use arrows to change selected tile. " .. #plr_tiles - 1 .. " other tiles. "
+  -- if we are going first, read first tile
+  if first_player == 1 then
+    init_text = "you are attacking first. " .. plr_tile_sr .. " press x to attack."
+  else
+    init_text = "cpu is attacking first. they attacked with " .. tile_sr(cpu_board[#cpu_board]) .. ". you are defending. " .. plr_tile_sr .. " press x to defend or z to pass. "
+  end
+  
+  set_sr_text(init_text)
   
 end
 
@@ -756,6 +769,13 @@ function check_if_matching(tile_a, tile_b)
   end
   
   return false
+end
+
+function tile_sr(tile)
+  if (tile == 10) return "tiger"
+  if (tile == 9) return "dragon"
+  if (tile == 11) return "face down tile"
+  return tile
 end
 -->8
 -- qsort, from code snippets
