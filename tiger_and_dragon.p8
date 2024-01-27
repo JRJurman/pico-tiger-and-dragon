@@ -147,7 +147,7 @@ end
 function handle_title_updates()
   if (btnp(❎) or btnp(🅾️)) then
     map_state = menu_state
-
+    sfx(0)
     if (map_state == 1) init_game_screen()
     if (map_state == 2) init_rules_screen()
     if (map_state == 3) init_about_screen()
@@ -156,10 +156,12 @@ function handle_title_updates()
 
   -- handle menu navigation
   if (btnp(⬇️)) then
+    sfx(5)
     new_option = ((menu_state+0)%4) + 1
     update_menu_state(new_option)
   end
   if (btnp(⬆️)) then
+    sfx(5)
     new_option = ((menu_state-2)%4) + 1
     update_menu_state(new_option)
   end
@@ -244,6 +246,7 @@ end
 
 function handle_about_updates()
   if (btnp(❎) or btnp(🅾️)) then
+    sfx(1)
     map_state = 0
     set_sr_text("back to main menu, about selected")
   end
@@ -350,6 +353,7 @@ end
 
 function handle_rules_updates()
   if (btnp(❎) or btnp(🅾️)) then
+    sfx(1)
     map_state = 0
     set_sr_text("back to main menu, rules selected")
   end
@@ -405,7 +409,7 @@ end
 
 function handle_controls_updates()
   if (btnp(❎) or btnp(🅾️)) then
-    
+    sfx(1)
     map_state = 0
     set_sr_text("back to main menu, controls selected")
   end
@@ -459,39 +463,53 @@ end
 
 function handle_game_updates()
 
-  -- hitting 🅾️ sends you back to the menu (for now)
+  -- player passing
   if (btnp(🅾️)) then
+    sfx(3)
     game_state = 3
     handle_cpu_response()
   end
   
   -- hitting ❎ selects the tile to place
   if (btnp(❎) and selected_panel == 4) then
+    
+    
+    
     if (game_state == 0) then
+      -- player attacking, they can choose any tile
+      sfx(7)
       place_tile(plr_tiles, plr_board, selected_tile)
       handle_cpu_response()
     elseif (game_state == 1) then
+      -- player defending, must be a valid tile
+      sfx(2)
       place_tile(plr_tiles, plr_board, selected_tile)
       game_state = 0
     elseif (game_state == 2) then
+      -- player choosing a tile to pass
+      sfx(2)
       place_tile(plr_tiles, plr_board, selected_tile, true)
       game_state = 0
     end    
   end
   
   -- moving left and right changes selected tile
-  if (btnp(➡️)) then
+  if (btnp(➡️) and selected_panel == 4) then
+    sfx(6)
     selected_tile = (selected_tile) % #plr_tiles + 1
   end
-  if (btnp(⬅️)) then
+  if (btnp(⬅️) and selected_panel == 4) then
+    sfx(6)
     selected_tile = (selected_tile - 2) % #plr_tiles + 1
   end
   
   -- moving up and down changes selected panel
   if (btnp(⬆️)) then
+    sfx(5)
     selected_panel = (selected_panel - 2) % 4 + 1
   end
   if (btnp(⬇️)) then
+    sfx(5)
     selected_panel = (selected_panel) % 4 + 1
   end
 end
@@ -698,36 +716,43 @@ end
 
 function find_matching_tile_index(tile, hand)
   for i=1,#hand do
-    hand_tile = hand[i]
-    -- check if the tile matches
-    if hand_tile == tile then
+    local hand_tile = hand[i]
+    local is_matching = check_if_matching(hand_tile, tile)
+    if (is_matching) then
       return i
     end
-    
-    -- if the tile is odd, check if this is the tiger
-    if hand_tile == 9 and tile % 2 == 1 then
-      return i
-    end
-    
-    -- if the tile is even, check if this is the dragon
-    if hand_tile == 10 and tile % 2 == 0 then
-      return i
-    end
-    
-    -- if the tile is the dragon or tiger, any even or odd tile will match
-    if hand_tile % 2 == 1 and tile == 9 then
-      return i
-    end
-    
-    if hand_tile % 2 == 0 and tile == 10 then
-      return i
-    end  
   end
   
   return -1
 end
 
-
+function check_if_matching(tile_a, tile_b)
+  -- check if the tile matches
+  if tile_a == tile_b then
+    return true
+  end
+    
+  -- if the tile is odd, check if this is the tiger
+  if tile_a == 9 and tile_b % 2 == 1 then
+    return true
+  end
+    
+  -- if the tile is even, check if this is the dragon
+  if tile_a == 10 and tile_b % 2 == 0 then
+    return true
+  end
+    
+  -- if the tile is the dragon or tiger, any even or odd tile will match
+  if tile_a % 2 == 1 and tile_b == 9 then
+    return true
+  end
+    
+  if tile_a % 2 == 0 and tile_b == 10 then
+    return true
+  end
+  
+  return false
+end
 -->8
 -- qsort, from code snippets
 
@@ -1011,3 +1036,13 @@ __map__
 1111111111111111111111111111111111000000000000000000000000000011110000000000000000000000000000110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1111111111111111111111111111111111000000000000000000000000000011110000000000000000000000000000110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+00020000005000f5501155013550165501a5501d55021550255502655000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500
+00020000005000050025550215501b550195501655015550005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500
+000200000050000500175501a5501d55020550255502555000500005000c500175501b55020550245500b5000a500095000750000500005000050000500005000050000500005000050000500005000050000500
+00020000005000050023550215501e5501b5501a550005000050000500005001e5501c5501b550185501755000500005000050000500005000050000500005000050000500005000050000500005000050000500
+0003000003500005001955015550125500f5500d55000500005001755011550105500050000500005001655014550115500050000500005001655012550105500050000500005000050000500005000050000500
+000200000050000500005001c5501d550205502555029550005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500
+000200000050000500005001855013550185501c5501d550005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500
+000200000050000500005002255025550295502d55034550375500050000500005002c55033550385500050000500005000050000500005000050000500005000050000500005000050000500005000050000500
+000200000050000500005000f55010550115501355016550185501c5502055021550175501a5501c55021550245502a5501c5001355015550185501d550265502b550185001a5001a55020550265502d55000500
