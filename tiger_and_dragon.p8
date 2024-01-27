@@ -500,22 +500,34 @@ function handle_game_updates()
   if (btnp(➡️) and selected_panel == 4) then
     sfx(6)
     selected_tile = (selected_tile) % #plr_tiles + 1
-  		set_sr_text(tile_sr(plr_tiles[selected_tile]) .. " selected. "  .. #plr_tiles - selected_tile .. " tiles remaining.")
   end
   if (btnp(⬅️) and selected_panel == 4) then
     sfx(6)
     selected_tile = (selected_tile - 2) % #plr_tiles + 1
-    set_sr_text(tile_sr(plr_tiles[selected_tile]) .. " selected. " .. #plr_tiles - selected_tile .. " tiles remaining.")
   end
+  
+  local selected_tile_text = tile_sr(plr_tiles[selected_tile]) .. " selected. "  .. #plr_tiles - selected_tile .. " tiles remaining."
+
   
   -- moving up and down changes selected panel
   if (btnp(⬆️)) then
     sfx(5)
-    selected_panel = (selected_panel - 2) % 4 + 1
+    selected_panel = (selected_panel - 2) % 4 + 1  
   end
   if (btnp(⬇️)) then
     sfx(5)
     selected_panel = (selected_panel) % 4 + 1
+  end
+  
+  if selected_panel == 1 then
+    set_sr_text("cpu has " .. #cpu_tiles .. " tiles remaining. ")
+  elseif selected_panel == 2 then
+    local cpu_state_text = game_state == 1 and "cpu is attacking with " .. tile_sr(cpu_board[#cpu_board]) .. ". " or "cpu has attacked. "
+    set_sr_text(cpu_state_text .. "cpu board has " .. board_sr(cpu_board))
+  elseif selected_panel == 3 then
+    set_sr_text("your board has " .. board_sr(plr_board))
+  elseif selected_panel == 4 and (btnp(⬅️) or btnp(➡️) or btnp(⬆️) or btnp(⬇️)) then
+    set_sr_text(selected_tile_text)
   end
 end
 
@@ -776,6 +788,22 @@ function tile_sr(tile)
   if (tile == 9) return "dragon"
   if (tile == 11) return "face down tile"
   return tile
+end
+
+function board_sr(board)
+  if #board == 0 then
+    return "no tiles."
+  end
+  if #board == 1 and board[1] == -1 then
+    return "no tiles."
+  end 
+  local tiles_str = ""
+  for i=1, #board do
+    if board[i] != -1 then
+      tiles_str = tiles_str .. ", " .. tile_sr(board[i])
+  		end
+  end
+  return tiles_str .. " tile."
 end
 -->8
 -- qsort, from code snippets
