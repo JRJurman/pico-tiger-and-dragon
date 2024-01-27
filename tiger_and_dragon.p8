@@ -449,6 +449,14 @@ plr_tiles = {}
 selected_tile = 1
 selected_panel = 4
 
+cpu_passed = false
+
+-- 0 - player attacking
+-- 1 - player defending
+-- 2 - player resolving pass
+-- 3 - 
+game_state = -1
+
 function init_game_screen()
   -- setup the game state
   init_game_state()
@@ -465,7 +473,16 @@ function handle_game_updates()
   
   -- hitting ❎ selects the tile to place
   if (btnp(❎) and selected_panel == 4) then
-    place_tile(plr_tiles, plr_board, selected_tile)
+    if (game_state == 0) then
+      place_tile(plr_tiles, plr_board, selected_tile)
+      handle_cpu_response()
+    elseif (game_state == 1) then
+      place_tile(plr_tiles, plr_board, selected_tile)
+      game_state = 0
+    elseif (game_state == 2) then
+      place_tile(plr_tiles, plr_board, selected_tile, true)
+      game_state = 0
+    end    
   end
   
   -- moving left and right changes selected tile
@@ -520,9 +537,11 @@ function init_game_state()
   cpu_tiles = {}
   plr_tiles = {}
   
+  cpu_passed = false
+  
   fill_tile_pool()
 
-  first_player = flr(rnd(2))
+  first_player = 0 -- flr(rnd(2))
   -- give each player 13 tiles
   local cpu_limit = first_player == 0 and 14 or 13
   local plr_limit = first_player == 1 and 14 or 13
@@ -540,9 +559,18 @@ function init_game_state()
   if first_player == 0 then
     add(plr_board, -1)
     place_tile(cpu_tiles, cpu_board, 1)
+    handle_cpu_response()
   else
     add(cpu_board, -1)
   end
+  
+  -- set game state based on first player
+  if first_player == 0 then
+    game_state = 1
+  else
+    game_state = 0
+  end
+  
 end
 
 -- this for the tiles on the board to be scaled
@@ -575,11 +603,14 @@ function draw_cpu_board()
   
   -- tiles from cpu's board
   for i=1,#cpu_board do
+    local row = ((i+1) % 2)
+    local col = ceil(i / 2)
     local tile = cpu_board[i]
     if tile != -1 then
       sspr(tile*8, 0,
         8,8, --width, height
-        93,46, -- x,y
+        108+(-14*col), -- x
+        46+(-18*row), -- y
         16,16 -- stretched width, height 
       )
     end
@@ -627,12 +658,71 @@ function draw_cpu_cursor()
   rect(8, 11, 119, 20, 11)
 end
 
-function place_tile(tiles, board, idx)
+function place_tile(tiles, board, idx, is_passing)
   local tile = deli(tiles,idx)
-  add(board,tile)
+  if (is_passing) then
+    add(board, 11)
+  else
+    add(board,tile)
+  end
 end
 
+function handle_cpu_response()
+  -- either defends + attacks
+  -- or the cpu will pass
+  -- todo: handle pass from plr
+  
+  if (game_state == 0) then
+    -- player has attacked
+    -- read the player tile
+    local plr_tile = plr_board[#plr_board]
+    
+    -- check if cpu has a matching tile
+    local matching_idx = find_matching_tile_index(plr_tile, cpu_tiles)
+    if (matching_idx != -1) then
+      -- we have a matching tile
+      place_tile(cpu_tiles, cpu_board, matching_idx)
+      -- we can now attack
+      place_tile(cpu_tiles, cpu_board, 1)
+      -- player is now defending
+      game_state = 1
+    else
+      -- cpu is passing
+      game_state = 2
+    end
+  end
+end
 
+function find_matching_tile_index(tile, hand)
+  for i=1,#hand do
+    hand_tile = hand[i]
+    -- check if the tile matches
+    if hand_tile == tile then
+      return i
+    end
+    
+    -- if the tile is odd, check if this is the tiger
+    if hand_tile == 9 and tile % 2 == 1 then
+      return i
+    end
+    
+    -- if the tile is even, check if this is the dragon
+    if hand_tile == 10 and tile % 2 == 0 then
+      return i
+    end
+    
+    -- if the tile is the dragon or tiger, any even or odd tile will match
+    if hand_tile % 2 == 1 and tile == 9 then
+      return i
+    end
+    
+    if hand_tile % 2 == 0 and tile == 10 then
+      return i
+    end  
+  end
+  
+  return -1
+end
 
 
 -->8
