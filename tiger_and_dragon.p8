@@ -178,9 +178,9 @@ function draw_title_screen()
   map()
 
   -- draw title text
-  print("tiger &", 50, 20, 0)
-  print("dragon ", 50, 26, 0)
-  -- print("a11y pico-8 port", 45, 32, 0)
+  local dbl_size = "\^w" .. "\^t"
+  print(dbl_size .. "tiger &", 39, 20, 0)
+  print(dbl_size .. "dragon ", 42, 32, 0)
 
   -- draw title options
   for i=1, #title_menu_options do
@@ -383,8 +383,7 @@ end
 -- controls screen
 
 control_text_blocks = {
-[[ up / down - move between
-score, boards, tiles ]],
+[[ up / down - move between boards and tiles ]],
 [[ left / right - change tile
 selection ]],
 [[ x (x on keyboard) - select a 
@@ -406,17 +405,12 @@ end
 
 function handle_controls_updates()
   if (btnp(❎) or btnp(🅾️)) then
+    
     map_state = 0
     set_sr_text("back to main menu, controls selected")
   end
 
-  -- handle scrolling
-  if (btnp(⬇️) and control_scroll_offset > 0) then
-    control_scroll_offset = control_scroll_offset - 6
-  end
-  if (btnp(⬆️) and control_scroll_offset < 0) then
-    control_scroll_offset = control_scroll_offset + 6
-  end
+  -- no handle scrolling (single screen)
 end
 
 -- draw controls screen
