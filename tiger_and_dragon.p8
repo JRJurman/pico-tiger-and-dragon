@@ -454,7 +454,7 @@ cpu_passed = false
 -- 0 - player attacking
 -- 1 - player defending
 -- 2 - player resolving pass
--- 3 - 
+-- 3 - player passed
 game_state = -1
 
 function init_game_screen()
@@ -467,8 +467,8 @@ function handle_game_updates()
 
   -- hitting 🅾️ sends you back to the menu (for now)
   if (btnp(🅾️)) then
-    map_state = 0
-    set_sr_text("back to main menu, about selected")
+    game_state = 3
+    handle_cpu_response()
   end
   
   -- hitting ❎ selects the tile to place
@@ -690,6 +690,15 @@ function handle_cpu_response()
       -- cpu is passing
       game_state = 2
     end
+  end
+  
+  if (game_state == 3) then
+    -- player has passed
+    -- cpu places a blank tile, and attacks
+    place_tile(cpu_tiles, cpu_board, 1, true)
+    place_tile(cpu_tiles, cpu_board, 1)
+    
+    game_state = 1
   end
 end
 
