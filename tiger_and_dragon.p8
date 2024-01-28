@@ -211,24 +211,24 @@ end
 -- about screen
 
 about_text_blocks = {
-[[ you are a kung-fu master,
-trading blows with the school
-of the "tiger" and the school
-of the "dragon". defend against
-your opponent's attacks to turn
-the tables and launch an attack
+[[ you are a kung-fu master, 
+trading blows with the school 
+of the "tiger" and the school 
+of the "dragon". defend against 
+your opponent's attacks to turn 
+the tables and launch an attack 
 of  your own. ]],
-[[this is a digital port of the
-"tiger and dragon" game
-published by oink games and
+[[this is a digital port of the 
+"tiger and dragon" game 
+published by oink games and 
 archlight games. ]],
-[[this is an experiment in
-building an accessible game in
-pico-8, using pico-a11y-template
-, created by jesse jurman and
+[[this is an experiment in 
+building an accessible game in 
+pico-8, using pico-a11y-template 
+, created by jesse jurman and 
 tina howard. ]],
-[[for the full experience, we
-recommend checking out the
+[[for the full experience, we 
+recommend checking out the 
 official board game!]]
 }
 
@@ -315,27 +315,27 @@ end
 -- rules screen
 
 rule_text_blocks = {
-[[ at the start of the game you
-and your opponent will draw 13
-tiles. the player going first
+[[ at the start of the game you 
+and your opponent will draw 13 
+tiles. the player going first 
 draws an extra tile. ]],
-[[ the first player chooses one
-tile to start the attack. the
-next player can play a matching
-tile, or pass. the tiger matches
-all even valued tiles, and the
-dragon matches all odd valued
+[[ the first player chooses one 
+tile to start the attack. the 
+next player can play a matching 
+tile, or pass. the tiger matches 
+all even valued tiles, and the 
+dragon matches all odd valued 
 tiles. ]],
-[[ if the player has a matching
-tile, they can play that tile
-and then start their own attack,
-placing any tile they want. if
-they pass or do not have a
-matching tile, the attacking
-player chooses any tile to put
+[[ if the player has a matching 
+tile, they can play that tile 
+and then start their own attack, 
+placing any tile they want. if 
+they pass or do not have a 
+matching tile, the attacking 
+player chooses any tile to put 
 face down on their board. ]],
-[[ the player who places all of
-their tiles first wins the round.
+[[ the player who places all of 
+their tiles first wins the round. 
 ]]
 }
 
@@ -388,7 +388,7 @@ end
 
 control_text_blocks = {
 [[ up / down - move between boards and tiles ]],
-[[ left / right - change tile
+[[ left / right - change tile 
 selection ]],
 [[ x (x on keyboard) - select a 
 tile ]],
@@ -487,8 +487,10 @@ function handle_game_updates()
         place_tile(plr_tiles, plr_board, selected_tile)
         game_state = 0
         selected_tile = 1
+        set_sr_text("defending with " .. tile_sr(plr_board[#plr_board]) .. " tile. you are now attacking. " .. tile_sr(plr_tiles[selected_tile]) .. " selected.")
       else
         sfx(4)
+        set_sr_text("invalid selected tile. " .. tile_sr(plr_tiles[selected_tile]) .. " selected. ")
       end
     elseif (game_state == 2) then
       -- player choosing a tile to pass
@@ -586,7 +588,7 @@ function init_game_state()
   end
   
   -- sort the players hand
-  qsort(plr_tiles) 
+  qsort(plr_tiles)
   
   -- add tile to board based on first player
   if first_player == 0 then
@@ -713,7 +715,8 @@ end
 function handle_cpu_response()
   -- either defends + attacks
   -- or the cpu will pass
-  -- todo: handle pass from plr
+
+  local cpu_sr_text = ""
   
   if (game_state == 0) then
     -- player has attacked
@@ -725,14 +728,22 @@ function handle_cpu_response()
     if (matching_idx != -1) then
       -- we have a matching tile
       place_tile(cpu_tiles, cpu_board, matching_idx)
+      cpu_sr_text = "cpu blocked with " .. tile_sr(cpu_board[#cpu_board]) .. "."
+      
       -- we can now attack
       place_tile(cpu_tiles, cpu_board, 1)
+      cpu_sr_text = cpu_sr_text .. " cpu is attacking with " .. tile_sr(cpu_board[#cpu_board]) .. "."
+
       -- player is now defending
       game_state = 1
+      cpu_sr_text = cpu_sr_text .. " you are defending. tile " .. tile_sr(plr_tiles[selected_tile]) .. " selected."
     else
       -- cpu is passing
       game_state = 2
+      cpu_sr_text = "cpu is passing. select a tile to play face down. " .. tile_sr(plr_tiles[selected_tile]) .. " selected."
     end
+    
+    set_sr_text(cpu_sr_text)
   end
   
   if (game_state == 3) then
