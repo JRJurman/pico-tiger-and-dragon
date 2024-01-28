@@ -475,6 +475,7 @@ function handle_game_updates()
       -- player attacking, they can choose any tile
       sfx(7)
       place_tile(plr_tiles, plr_board, selected_tile)
+      selected_tile = 1
       handle_cpu_response()
     elseif (game_state == 1) then
       -- player defending, must be a valid tile
@@ -485,6 +486,7 @@ function handle_game_updates()
         sfx(2)
         place_tile(plr_tiles, plr_board, selected_tile)
         game_state = 0
+        selected_tile = 1
       else
         sfx(4)
       end
