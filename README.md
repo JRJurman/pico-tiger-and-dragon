@@ -9,3 +9,11 @@ an HTML template for PICO-8 games that allows for screen reader output.
 
 To run locally, you can clone this repo and open the `a11y_page.html`.
 Alternatively, you can go directly to [a11y_page.html](https://jrjurman.com/pico-tiger-and-dragon/a11y_page.html)
+
+## How to build
+
+```
+./build_zip.sh
+```
+
+This will create a zip file with an `index.html` and `tiger_and_dragon.js`
