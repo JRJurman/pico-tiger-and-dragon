@@ -544,7 +544,7 @@ function handle_game_updates()
   -- if so, end the game and offer a reset
   if (#cpu_board == 14 or #plr_board == 14) then
     game_state = 4
-    local winner_text = #cpu_board == 14 and "cpu won." or "you won!"
+    local winner_text = #cpu_board == 14 and "cpu is the winner." or "you are the winner!"
     set_sr_text(winner_text .. " press any button to play again!")
   end
 end
