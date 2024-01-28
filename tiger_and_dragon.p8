@@ -453,11 +453,12 @@ cpu_passed = false
 -- 1 - player defending
 -- 2 - player resolving pass
 -- 3 - player passed
+-- 4 - game has ended
 game_state = -1
 
 function init_game_screen()
   -- setup the game state
-  local init_text = init_game_state()
+  init_game_state()
 end
 
 function handle_game_updates()
@@ -493,10 +494,13 @@ function handle_game_updates()
         set_sr_text("invalid selected tile. " .. tile_sr(plr_tiles[selected_tile]) .. " selected. ")
       end
     elseif (game_state == 2) then
-      -- player choosing a tile to pass
+      -- player choosing a tile to place face down
       sfx(2)
       place_tile(plr_tiles, plr_board, selected_tile, true)
+      selected_tile = 1
       game_state = 0
+      
+      set_sr_text("placed a tile face down. you are now attacking. " .. tile_sr(plr_tiles[selected_tile]) .. " selected. ")
     end    
   end
   
@@ -509,9 +513,6 @@ function handle_game_updates()
     sfx(6)
     selected_tile = (selected_tile - 2) % #plr_tiles + 1
   end
-  
-  local selected_tile_text = tile_sr(plr_tiles[selected_tile]) .. " selected. "  .. #plr_tiles - selected_tile .. " tiles remaining."
-
   
   -- moving up and down changes selected panel
   if (btnp(⬆️)) then
@@ -526,12 +527,25 @@ function handle_game_updates()
   if selected_panel == 1 then
     set_sr_text("cpu has " .. #cpu_tiles .. " tiles remaining. ")
   elseif selected_panel == 2 then
-    local cpu_state_text = game_state == 1 and "cpu is attacking with " .. tile_sr(cpu_board[#cpu_board]) .. ". " or "cpu has attacked. "
+    local cpu_state_text = game_state == 1 and "cpu is attacking with " .. tile_sr(cpu_board[#cpu_board]) .. ". " or ""
     set_sr_text(cpu_state_text .. "cpu board has " .. board_sr(cpu_board))
   elseif selected_panel == 3 then
     set_sr_text("your board has " .. board_sr(plr_board))
   elseif selected_panel == 4 and (btnp(⬅️) or btnp(➡️) or btnp(⬆️) or btnp(⬇️)) then
+    local selected_tile_text = tile_sr(plr_tiles[selected_tile]) .. " selected. "  .. #plr_tiles - selected_tile .. " tiles remaining."
     set_sr_text(selected_tile_text)
+  end
+  
+  if (game_state == 4 and (btnp(❎) or btnp(🅾️))) then
+    init_game_state()
+  end
+  
+  -- check if either board is full
+  -- if so, end the game and offer a reset
+  if (#cpu_board == 14 or #plr_board == 14) then
+    game_state = 4
+    local winner_text = #cpu_board == 14 and "cpu won." or "you won!"
+    set_sr_text(winner_text .. " press any button to play again!")
   end
 end
 
@@ -545,6 +559,7 @@ function draw_game_screen()
   draw_cpu_cursor()
   draw_cpu_board()
   draw_plr_board()
+  draw_win_modal()
 end
 
 function fill_tile_pool()
@@ -573,6 +588,9 @@ function init_game_state()
   cpu_passed = false
   
   fill_tile_pool()
+  
+  selected_tile = 1
+  selected_panel = 4
   
   local init_text = ""
 
@@ -615,7 +633,6 @@ function init_game_state()
   end
   
   set_sr_text(init_text)
-  
 end
 
 -- this for the tiles on the board to be scaled
@@ -753,6 +770,8 @@ function handle_cpu_response()
     place_tile(cpu_tiles, cpu_board, 1)
     
     game_state = 1
+    
+    set_sr_text("passing. cpu placed a tile face down. cpu is now attacking with " .. tile_sr(cpu_board[#cpu_board]) .. ". you are defending. tile " .. tile_sr(plr_tiles[selected_tile]) .. " selected.")
   end
 end
 
@@ -797,6 +816,7 @@ function check_if_matching(tile_a, tile_b)
 end
 
 function tile_sr(tile)
+  if (tile == nil) return ""
   if (tile == 10) return "tiger"
   if (tile == 9) return "dragon"
   if (tile == 11) return "face down tile"
@@ -816,7 +836,18 @@ function board_sr(board)
       tiles_str = tiles_str .. ", " .. tile_sr(board[i])
   		end
   end
-  return tiles_str .. " tile."
+  return tiles_str .. "."
+end
+
+function draw_win_modal()
+  if game_state == 4 then
+    rectfill(20, 20, 100, 50, 1)
+    rect(19, 19, 101, 51, 7)
+    local winner_text = #cpu_board == 14 and "cpu won 🐱" or "you won ♥"
+    print(winner_text, 30, 26, 7)
+    print("press any button", 30, 32, 7)
+    print("to play again", 30, 38, 7)
+  end
 end
 -->8
 -- qsort, from code snippets
